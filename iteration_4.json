@@ -1,0 +1,40 @@
+{
+  "summary": "LORÉ v4 (audio messaging + TTS + voice + call + dialogue/action). Backend: 78/78 pass (51 regression + 27 new). Frontend: all v4 spec testids present and working — mic↔send swap, audio file picker, TTS hover button, dialogue/action italic separation, typing-indicator mood reflects character (shy/1.6s for Elara), CallScreen modal opens with gradient + push-to-talk, VoiceSection has all 6 voice radio cards with previews + sample upload + ElevenLabs ID.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [
+      {"component": "CallScreen", "issue": "Close button has aria-label='Close call' but no data-testid='call-close'. Minor — caused 30s hover timeout in test because modal intercepts pointer events. Add data-testid='call-close' for reliable test automation.", "selector": "[data-testid='call-screen'] button", "priority": "LOW"}
+    ],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_audio_tts.py",
+    "/app/backend/tests/test_personas_messages.py",
+    "/app/backend/tests/backend_test.py",
+    "/app/test_reports/pytest/v4_audio_results.xml",
+    "/app/test_reports/pytest/v4_full_results.xml"
+  ],
+  "action_items": [
+    "(LOW) Add data-testid='call-close' to CallScreen close (X) button.",
+    "Server.py is now ~1090 lines — consider splitting into modules (auth/files/characters/chat/personas/messages/tts) when next iteration adds features."
+  ],
+  "critical_code_review_comments": [
+    "dialogue_only() correctly strips *actions* and [IMAGE: ...] tags; returns '' when only actions present (verified via util tests + 400 path on /messages/{mid}/tts).",
+    "/api/upload accepts audio/* via either ALLOWED_AUDIO set OR ct.startswith('audio/'); 12MB cap enforced for audio (vs 5MB for image); 13MB rejected (verified).",
+    "send_message correctly transcribes audio_path via Whisper, appends transcript to user_content, and feeds it into the system prompt with quoted transcript context. Returns 400 for unknown audio_path.",
+    "/api/messages/{mid}/tts uses character.voice_id (default 'alloy') for synthesis; returns 404 for cross-user message access (security verified).",
+    "All 6 OpenAI voices (alloy/echo/fable/nova/onyx/shimmer) generate >1KB mp3 in ~2s each via /api/tts/preview.",
+    "Frontend Chat.jsx: composer correctly hides send and shows mic when (!input && !attached?.path && !isRecording); typing-indicator inline-styles animationDuration based on detectTypingMood result (verified 1.6s = 'shy' for haunted/wry/guarded character description).",
+    "VoiceSection: previewVoice() ignores Audio.play() promise rejection — fine in modern browsers but could log to console on autoplay block.",
+    "useVoiceRecorder REC_MIN_SEC=15 is enforced both in hook stop() guard and in Chat.jsx auto-stage useEffect (defense-in-depth)."
+  ],
+  "updated_files": ["/app/backend/tests/test_audio_tts.py"],
+  "success_rate": {"backend": "100% (78/78)", "frontend": "~95% (all spec testids verified; only call-close testid missing — non-blocking)"},
+  "test_credentials": "test@lore.app / testpass123 (verified working).",
+  "seed_data_creation": "test_audio_tts.py creates two TEST_ users + characters + messages, all cleaned up at end of suite. No persistent test artifacts in test@lore.app account from this run.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Backend regression (78 tests, ~88s). Run with: REACT_APP_BACKEND_URL=<url> pytest /app/backend/tests/ --junitxml=... New tests live in /app/backend/tests/test_audio_tts.py. Frontend: data-testids in place for mic-btn, chat-send, chat-attach-audio-btn, chat-audio-input, recording-indicator, recording-stop, attachment-preview, call-btn, call-screen, msg-tts-{id}, msg-regenerate-{id}, msg-edit-btn-{id}, voice-picker, voice-option-{id}, voice-preview-{id}, voice-sample-upload, voice-sample-input, elevenlabs-voice-id. Browser MediaRecorder cannot be tested via Playwright (no mic in headless) — exercise audio path via Volume2 file picker (chat-attach-audio-btn → chat-audio-input).",
+  "rca of the issue": "No bugs found. All v4 features (audio upload, Whisper transcription, TTS preview, character TTS playback, voice fields, dialogue/action split, typing mood, CallScreen, VoiceSection) are correctly wired backend↔frontend with appropriate data-testids."
+}

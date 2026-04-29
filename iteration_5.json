@@ -1,0 +1,57 @@
+{
+  "summary": "LORÉ v5 batch backend testing: 98/99 pass (78 prior regression all green + 20/21 new v5 tests). One CRITICAL backend bug found: PUT/GET /api/characters/{cid}/settings only persists/returns active_persona_id and silently drops all new chat-customization fields (background_path, background_blur, background_dim, user_bubble_color, char_bubble_color, font_size, glow_enabled, typing_style, animation_speed). Models accept them but the DB write/read code is unchanged from v4.",
+  "backend_issues": {
+    "critical": [
+      {
+        "endpoint": "PUT /api/characters/{cid}/settings (and GET)",
+        "issue": "ChatSettingsInput model accepts background_path/background_blur/background_dim/user_bubble_color/char_bubble_color/font_size/glow_enabled/typing_style/animation_speed, but server.py:977-995 only writes 'active_persona_id' to db.chat_settings and server.py:968-974 only returns 'active_persona_id'. All 9 customization fields are silently dropped — the per-chat customization feature is non-functional on the backend.",
+        "priority": "CRITICAL"
+      }
+    ],
+    "minor": [
+      {
+        "endpoint": "GET /api/characters/{cid}",
+        "issue": "Owner-only (line 502-506 uses {user_id: user.id} not _character_view). Non-owners cannot directly fetch a public character's full data via this endpoint — they must use /discover or chat sub-routes. Consider switching to _character_view for consistency with /messages, /memories, /restart, /chat. Not a blocker since /discover and /discover/featured return full Character objects."
+      },
+      {
+        "endpoint": "FastAPI on_event",
+        "issue": "DeprecationWarning: @app.on_event('startup'/'shutdown') deprecated — switch to lifespan handlers (cosmetic, not breaking)."
+      }
+    ]
+  },
+  "frontend_issues": {"ui_bugs": [], "integration_issues": [], "design_issues": []},
+  "test_report_links": [
+    "/app/backend/tests/test_v5_batch.py",
+    "/app/backend/tests/backend_test.py",
+    "/app/backend/tests/test_audio_tts.py",
+    "/app/backend/tests/test_personas_messages.py",
+    "/app/test_reports/pytest/v5_results.xml",
+    "/app/test_reports/pytest/v5_full_results.xml"
+  ],
+  "action_items": [
+    "(CRITICAL) Update set_chat_settings (server.py:977-995) to write all ChatSettingsInput fields to db.chat_settings (use {k:v for k,v in body.model_dump().items() if v is not None}). Update get_chat_settings (server.py:968-974) to return the full stored settings doc, defaulting missing fields. Without this fix, the entire per-chat Customize panel (background, blur, dim, bubble colors, font, glow, typing style, animation speed) is dead UI — values appear to save but never round-trip.",
+    "(LOW) Consider letting GET /characters/{cid} use _character_view so non-owners can fetch full Character schema (currently 404 unless they use /discover).",
+    "(LOW) Migrate FastAPI on_event to lifespan handlers."
+  ],
+  "critical_code_review_comments": [
+    "set_chat_settings ignores 9 of 10 fields in ChatSettingsInput — silent data loss is the worst kind of bug because frontend will appear to work; users will think their preferences saved.",
+    "Auto-username generation in signup() is correct: lowercased local-part with non-[a-z0-9_] stripped, truncated to 20, deduped via numeric suffix. Confirmed via test_signup_dedupes_username.",
+    "/api/users/{username} correctly excludes _id, password_hash, email, settings; returns user + public_characters + public_voices. 404 on missing user. No auth required (intentional public endpoint) — verified.",
+    "PUT /api/users/me correctly enforces username uniqueness via {id: {$ne}} check (returns 400 'Username taken'). Returns fresh doc with _id and password_hash projected out.",
+    "DELETE /characters/{cid}/messages, POST /characters/{cid}/restart, DELETE /characters/{cid}/chat all use _character_view (allow public char chat) — non-owners can clear/restart/delete their own chats with public characters without affecting the character itself. Verified.",
+    "POST /characters/{cid}/memories + PATCH /memories/{mid} round-trip type/content/pinned correctly. Cross-user PATCH returns 404 (security verified).",
+    "Asset gating: private_jet correctly rejected unless finance.luxury_level == 'very_wealthy' (tested all three transitions: no-finance→400, wealthy→400, very_wealthy→200).",
+    "/findlove/candidates correctly excludes own characters via {user_id: {$ne}}; like action returns matched:true; pass returns matched:false.",
+    "/discover/featured caps at 20, sorts by updated_at desc, returns only is_public=true.",
+    "Social posts cascade-delete on profile delete (verified via empty post list after profile DELETE).",
+    "Server.py at 1493 lines — strongly recommend splitting into routers/ modules (auth, files, characters, chat, persona, memory, voices, social, world) before next iteration."
+  ],
+  "updated_files": ["/app/backend/tests/test_v5_batch.py"],
+  "success_rate": {"backend": "98/99 (99.0%) — 1 critical functional bug in chat-settings persistence", "frontend": "not tested (backend-only request)"},
+  "test_credentials": "test@lore.app / testpass123 still works. New TEST_<uuid>@lore.app users are created and left in DB (cleanup not implemented for v5).",
+  "seed_data_creation": "Each module run creates 2-4 TEST_ users with one TEST_V5_Char (public). Some test artifacts (TEST_V5_Voice, TEST_Sister, TEST_G650, TEST_Date Night, social profiles) are created during test classes but most are cleaned up within their tests; users + char remain. Recommend a periodic db cleanup of TEST_-prefixed records.",
+  "retest_needed": true,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Run regression: REACT_APP_BACKEND_URL=<url> pytest /app/backend/tests/ -v --junitxml=... (~155s, 99 tests). After main agent fixes set_chat_settings to persist all ChatSettingsInput fields and get_chat_settings to return them, re-run pytest /app/backend/tests/test_v5_batch.py::TestChatCustomization to confirm green. Frontend per-chat customize panel should then be retested end-to-end.",
+  "rca of the issue": "RCA for chat-settings bug: ChatSettingsInput Pydantic model was extended in v5 (server.py:275-285) to accept 9 new customization fields, but the persistence handler set_chat_settings (server.py:977-995) was not updated — its $set body still hardcodes only {user_id, character_id, active_persona_id, updated_at}. Repro: PUT /api/characters/{cid}/settings with any of the new fields; 200 OK; GET /api/characters/{cid}/settings returns {active_persona_id: ...} only — extra fields gone. Mitigation (one-line fix): replace the hardcoded $set with $set: {user_id, character_id, **{k:v for k,v in body.model_dump().items() if v is not None}, updated_at}, and update get_chat_settings to return the full doc minus _id (defaulting active_persona_id to None)."
+}

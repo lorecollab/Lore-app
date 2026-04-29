@@ -1,0 +1,36 @@
+{
+  "summary": "V10 frontend testing complete. ALL 12 review-request items PASS. Landing /welcome renders cinematic dark gradient with three OAuth-style buttons (landing-apple white, landing-google bordered, landing-guest text-only), correct headline 'YOUR LIFE. YOUR FANTASY. YOUR WORLD.', caption 'ARE WE CLOCKING IN?', wide-tracked 'L O R É' logo, sparkle ✦ ornament, and Terms/Privacy legal links. Auth /login shows new serif copy 'Quickly sign back in / to play with your characters again.' and uppercase 'SIGN IN' button. /signup shows 'Create your fantasy, create your world.' with 18+ checkbox. Bottom nav has exactly 5 testids (nav-home, nav-chat, nav-plus, nav-profile, nav-settings); plus is a raised gold disc; nav is hidden on /welcome, /login, /signup, /chat/*, /legal/*. Tapping nav-plus opens plus-sheet with plus-character/plus-persona/plus-voice/plus-close — plus-voice navigates to /create-voice. /create-voice exposes cv-back, cv-upload-btn, cv-upload-input, cv-rec-start, cv-name-input, cv-submit; cv-submit is correctly disabled until both file and name are present. AppShell sidebar removed: mobile-menu-toggle and brand-link no longer exist. /home top bar shows home-search, home-profile-btn, home-settings (no hamburger). Interactive hero confirmed: hovering char-card-{id} updates hero-name (Elara Voss → TEST_V6_Char on hover, AuthImage keyed for crossfade). ChatList right-click no longer reveals chat-row-menu (long-press removed). /chat menu has only menu-context, menu-social, menu-memories, menu-profile, menu-restart, menu-clear, menu-delete — menu-settings/menu-customize correctly absent. api.js allowlist works: /welcome and /legal/terms with cleared localStorage do NOT redirect to /login. Backend regression sanity: GET /api/users/me/settings returns merged defaults (200, all expected keys). POST /api/characters without voice_id returns 200. No regressions detected.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/test_reports/iteration_9.json"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "Landing.jsx anti-pattern from iteration_8 was correctly fixed: setTimeout side-effect during render replaced with proper useEffect ([user, nav] deps) — root cause of /welcome→/login redirect resolved.",
+    "BottomNav.jsx hideOn list now correctly suppresses nav on /welcome /login /signup /chat/* /legal/* — clean conditional.",
+    "AppShell.jsx is now a tiny shell (15 lines) — sidebar fully retired as spec'd.",
+    "api.js 401 interceptor allowlist (/, /login, /signup, /welcome, /legal) is correct and prevents the bounce loop seen in iteration_8.",
+    "CreateVoice.jsx cleanly handles upload + record paths, 60s elapsed cap with auto-stop, mimeType audio/webm, 10MB cap, mic permission error toast — solid UX. Minor: when a recording is in progress, cv-upload-btn is disabled (good); however `picked` state is not cleared if user discards then immediately starts a new recording — tiny edge case, not blocking.",
+    "Home.jsx interactive hero with previewId state + AuthImage key remount achieves the spec'd crossfade — verified live.",
+    "ChatList right-click no longer triggers chat-row-menu — long-press handler successfully removed per V10 spec."
+  ],
+  "updated_files": [],
+  "success_rate": {
+    "backend": "100% (sanity passed: settings + character create)",
+    "frontend": "100% (all 12 review-request items verified; ~45 individual assertions passed)"
+  },
+  "test_credentials": "test@lore.app / testpass123 — confirmed working.",
+  "seed_data_creation": "Created 1 ephemeral TEST_v10_Char character via API and deleted it.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "V10 direction-correction work is fully verified. The /welcome bug from iteration_8 is fixed. Sidebar is gone. 5-tab bottom nav with raised plus button and bottom-sheet works. /create-voice route + flow works. Hero crossfade works. ChatList long-press removed but swipe-left targets (chat-swipe-clear-{id}, chat-swipe-delete-{id}, chat-confirm) were not directly exercised in this run — would require touchstart/touchmove dispatch to verify; visual code review shows they are still wired. If a future iteration needs to verify swipe, simulate touch events via page.touchscreen or page.evaluate to dispatch synthetic touchstart→touchmove→touchend on a chat-row.",
+  "rca of the issue": "N/A — no bugs found in this iteration."
+}

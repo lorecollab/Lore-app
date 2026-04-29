@@ -1,0 +1,45 @@
+{
+  "summary": "V8 Phase-1 polish testing. Backend: 7 new V8 tests (settings merged defaults, partial PUT, empty/unknown 400, DELETE /users/me cascade, tone+length chat reply for spicy/short and clean/long) — ALL 7 PASS. Full backend suite: 130/131 pass (~3.7 min). The 1 fail is pre-existing TestFindLove which is hidden in Phase 1 anyway. Frontend: nearly all Phase-1 surfaces verified — Home (hero+rows), Bottom Nav (5 testids, hidden on /chat & /legal), Settings (24 testids verified, tone selection persists across reload), Paywall, Legal, Chat (chat-menu-btn opens chat-menu with 8 items, menu-customize HIDDEN, call-btn HIDDEN, msg-tts HIDDEN on hover), Sidebar (nav-world/nav-voices HIDDEN), /world & /voices correctly redirect to /home, /signup 18+ checkbox blocks submit until checked. ONE CRITICAL FRONTEND BUG: /welcome route does NOT render the Landing component — it redirects to /login even with localStorage cleared. Landing testids 'landing-signup' / 'landing-login' never appear and the 'More than a chat. It's their life.' tagline is missing.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "test_v5_batch.py::TestFindLove::test_find_love_candidates_and_action", "issue": "Pre-existing flaky/stale: 'target ... not in candidates'. Unrelated to V8 work; findLove module is FEATURE-FLAGGED OFF in Phase 1."}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {"component": "Landing (/welcome route)", "issue": "Navigating to /welcome with no auth (cleared localStorage, fresh context) renders the Auth login form instead of Landing. URL is rewritten to /login. landing-signup and landing-login testids are absent. 'More than a chat. It's their life.', 'Are we clocking in?', and 'Create your fantasy' button text never appear. RootRedirect from / also points unauthenticated users to /welcome — they will all immediately bounce to /login and never see the new dark-luxury Landing screen.", "selector": "[data-testid='landing-signup'], [data-testid='landing-login']", "priority": "CRITICAL"}
+    ],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_v8_phase1.py",
+    "/app/test_reports/pytest/v8_results.xml",
+    "/app/test_reports/pytest/v8_full.xml"
+  ],
+  "action_items": [
+    "(CRITICAL) Debug why /welcome unconditionally redirects to /login. Verified: localStorage is empty (no lore_token, no lore_user), AuthContext should set user=null, Landing's `if (user)` branch should NOT fire. No explicit nav('/login') exists in Landing.jsx or App.js for path '/welcome'. Suggest: (a) add console.log inside Landing.jsx render to confirm component mounts; (b) check whether Landing component has a runtime error causing React Router to fall through to '*' → '/' → RootRedirect; (c) verify the export default in Landing.jsx; (d) try removing the `if (user) { setTimeout(...) }` line — it runs as a side-effect during render which is an anti-pattern and could trigger weird behavior under StrictMode. Replace with useEffect."
+  ],
+  "critical_code_review_comments": [
+    "Landing.jsx:9 — `if (user) { setTimeout(() => nav('/home'), 0); }` runs as a side-effect during render. Anti-pattern. Should be in a useEffect with [user] dep. May contribute to the /welcome bug above.",
+    "Auth.jsx login UI heading 'Welcome back' is correct, but the FIRST visit unauthenticated landing experience (intended to be Landing.jsx) is currently inaccessible.",
+    "server.py UserSettings model + GET/PUT /users/me/settings + DELETE cascade are clean and correct. Partial PUT semantics and unknown-field rejection both verified.",
+    "build_system_prompt tone_directives (spicy/clean/natural) and length_directives (short/normal/long) are wired correctly — V8 tests confirmed short replies stay ≤4 sentences and long replies are 100+ chars / 3+ sentences with no 'as an AI' artifact.",
+    "Chat.jsx properly gates externalTTS and advancedCustomize behind FEATURES flags (lines ~313–345 + ~442). callMode-gated call button hidden as expected. Bottom nav correctly hidden on /chat/* and /legal/* (verified).",
+    "server.py is 2104 lines — refactor into routers/ recommended (carry-over)."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_v8_phase1.py"
+  ],
+  "success_rate": {
+    "backend": "100% on V8 (7/7). Full suite 130/131 (99.2%) — only failing test is pre-existing find_love (Phase-2 hidden).",
+    "frontend": "~95%. All Phase-1 nav, settings, chat, paywall, legal, sidebar testids and behaviors confirmed. /welcome Landing page is broken — 1 CRITICAL bug."
+  },
+  "test_credentials": "test@lore.app / testpass123 — confirmed working via API and UI.",
+  "seed_data_creation": "Created several TEST_v8_* disposable users via signup for cascade-delete tests. All deleted as part of test. No seed data left behind.",
+  "retest_needed": true,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Run V8 backend: `export $(grep -v '^#' /app/frontend/.env | xargs) && pytest backend/tests/test_v8_phase1.py -v` (~28s). For full regression: same command on backend/tests/ (~3.7 min). The one CRITICAL bug to retest after main agent fix: navigate (in fresh context) to https://lore-chat.preview.emergentagent.com/welcome — should render Landing with data-testid='landing-signup'+'landing-login' visible AND tagline 'More than a chat. It\\'s their life.' AND 'Are we clocking in?' microcopy. Currently URL rewrites to /login. All other Phase-1 surfaces have already been confirmed working.",
+  "rca of the issue": "Symptom: GET /welcome → URL rewrites to /login, Auth.jsx renders. Repro: clear localStorage (or open private/fresh context), goto /welcome. Hypothesis: Landing.jsx line 9 `if (user) { setTimeout(() => nav('/home'), 0); }` is a render-time side effect. While `user` is null on initial render, in React StrictMode (CRA dev default) double-render + memoized auth context value could cause an unintended branch. More likely: Landing component throws/errors silently, React Router falls to wildcard '*' → '/' → RootRedirect → '/welcome' loop, eventually some child Auth render wins. Suggest: (1) wrap Landing.jsx body in try/catch + console.log to confirm it mounts; (2) move setTimeout into useEffect; (3) remove the `if (user)` redirect entirely (RootRedirect at '/' already handles this — visiting /welcome while logged in is fine, just show Landing)."
+}

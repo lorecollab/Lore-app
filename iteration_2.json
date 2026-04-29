@@ -1,0 +1,57 @@
+{
+  "summary": "Full backend + frontend test run for LORÉ v2 (object storage uploads, Gemini Nano Banana image gen, public characters, discover, cross-user public chat, new character fields). 29/30 backend tests pass. 1 real backend bug found in /api/chats/recent. Frontend works end-to-end: welcome, auth, discover, character form, profile, chat (send + typing indicator + reply + memory-saved toast), mobile layout.",
+  "backend_issues": {
+    "critical": [
+      {
+        "endpoint": "GET /api/chats/recent",
+        "issue": "Only returns characters owned by the user. Per spec it must also include public characters the user has chatted with (non-owned). Current query: db.characters.find({user_id: user.id}) — needs union with distinct character_ids from db.messages where user_id=user.id.",
+        "priority": "HIGH"
+      }
+    ],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {
+        "component": "Chat header",
+        "issue": "Clicking [data-testid=\"chat-memories-link\"] did not navigate to memories (likely inside a collapsed/hover menu, not wired to onClick navigation, or requires opening the kebab/info menu first).",
+        "selector": "[data-testid=\"chat-memories-link\"]",
+        "priority": "MEDIUM"
+      }
+    ],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/backend_test.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [
+    "Fix /api/chats/recent: union owned characters AND characters the current user has sent messages to. Example: collect distinct character_ids from db.messages.find({user_id}), add any missing ones (usually public, viewable via _character_view) to the recent list ordered by last message time.",
+    "Verify chat-memories-link click navigates to /characters/{id}/memories (if it's inside a menu, ensure the menu opens on click and the link is keyboard/click accessible)."
+  ],
+  "critical_code_review_comments": [
+    "server.py is ~620 lines — approaching split threshold; consider extracting storage/auth/characters/chat into modules.",
+    "maybe_generate_image errors are swallowed with warning only — OK per spec (best-effort), good.",
+    "IMAGE_TAG stripping works even when gen fails; correct.",
+    "No rate-limiting on /api/upload — 5MB cap is enforced after read(), acceptable for MVP but consider streaming check.",
+    "bcrypt+jwt flows correct, duplicate signup 400, bad login 401, /auth/me 401 all pass.",
+    "cross-user isolation correct for private chars (404) and public access works as intended.",
+    "Minor: /api/files/{path} returns 401 without token and 404 for unknown — both verified."
+  ],
+  "updated_files": [
+    "/app/backend/tests/backend_test.py"
+  ],
+  "success_rate": {"backend": "96.7% (29/30)", "frontend": "~95% (all core flows green; 1 minor nav link)"},
+  "test_credentials": "test@lore.app / testpass123 (existing seeded user, confirmed working).",
+  "seed_data_creation": "Created transient TEST_ users (User A, User B) + characters during pytest run. User A's test character is deleted at end of suite. User B retains 1 TEST_Private character + message history on User A's public character (since that character is kept for Elara Voss seed). No production data modified.",
+  "retest_needed": true,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Backend is solid; only /api/chats/recent needs union with chatted characters. All 30 tests in /app/backend/tests/backend_test.py are deterministic except the TestRecentChats.test_recent_includes_chatted_public which currently fails due to the real bug. Frontend data-testids are comprehensive (82 testids). AuthImage blob loading was not explicitly exercised but chat images are supported by the backend and user image_path round-trips correctly.",
+  "rca of the issue": {
+    "bug": "/api/chats/recent omits non-owned public characters the user has chatted with.",
+    "reproduction": "1) User A creates public character C. 2) User B logs in and POSTs a message to /api/characters/{C.id}/messages. 3) User B calls GET /api/chats/recent → response list does NOT include C (but it should).",
+    "root_cause": "Handler queries db.characters.find({user_id: current_user.id}) only; never inspects db.messages for character_ids the current user has interacted with.",
+    "mitigation": "In recent_chats: (a) fetch owned chars; (b) SELECT DISTINCT character_id FROM messages WHERE user_id=current_user.id; (c) for any id not in owned set, fetch via _character_view (owner-or-public) and append; (d) sort combined list by max(character.updated_at, last_message.created_at) desc."
+  }
+}

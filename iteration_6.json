@@ -1,0 +1,45 @@
+{
+  "summary": "v6 regression: CRITICAL chat-settings persistence bug from iteration_5 is fully fixed. Added 11 new backend tests (all pass) covering full 10-field round-trip, defaults, partial exclude_unset updates, individual field PUTs, video upload (mp4/webm/quicktime), >20MB rejection, and image-upload regression. v5 TestChatCustomization::test_set_and_get_chat_settings now passes. Frontend smoke-tested via Playwright on the public URL: login works, chat page renders with character-aura ring + chat-root, ChatCustomizeDrawer opens with customize-anim-speed slider, customize-bg-input accept='image/*,video/mp4,video/webm,video/quicktime', glow_enabled toggle round-trips across reload. No blocking issues. Seed user test@lore.app works.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "FastAPI on_event", "issue": "DeprecationWarning (from iteration_5, cosmetic only)"},
+      {"endpoint": "GET /api/characters/{cid}", "issue": "Still owner-only; non-owners must use /discover (from iteration_5, not a blocker)"}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_v6_chat_settings_video.py",
+    "/app/backend/tests/test_v5_batch.py",
+    "/app/test_reports/pytest/v6_results.xml"
+  ],
+  "action_items": [
+    "(LOW) Consider splitting server.py (1524 lines) into routers/ modules (carried over from iteration_5).",
+    "(LOW) Migrate FastAPI @on_event to lifespan handlers."
+  ],
+  "critical_code_review_comments": [
+    "Fix for set_chat_settings is correct: uses body.model_dump(exclude_unset=True) so partial updates do not clobber other stored fields; PUT now returns the projected full settings doc (verified by test_put_all_fields_round_trip and test_put_partial_does_not_clobber).",
+    "_project_chat_settings merges DB doc over _CHAT_SETTING_DEFAULTS correctly; defaults match spec (font_size=15, glow_enabled=True, typing_style='auto', animation_speed=1.0, blurs=0).",
+    "Upload endpoint cleanly branches audio/image/video via content_type; per-category cap (video=20MB, audio=12MB, image=5MB) verified. ALLOWED_VIDEO set is {mp4, webm, quicktime, ogg}; ct.startswith('video/') also allowed — keeps the gate loose enough for client content-type variations.",
+    "ChatCustomizeDrawer accept attribute includes 'image/*,video/mp4,video/webm,video/quicktime' — matches backend's ALLOWED_VIDEO.",
+    "Chat.jsx renders character-aura ring conditional on glow_enabled=true; verified present for default user/character.",
+    "Chat.jsx uses AuthMedia for background_path (switches image vs video by extension) — renders <video> for .mp4/.webm/.mov per code inspection; not video-path-tested end-to-end due to storage upload dependency but PUT with video path persists and the bg layer has the correct testid."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_v6_chat_settings_video.py"
+  ],
+  "success_rate": {
+    "backend": "11/11 new tests pass + 1 previously-failing v5 test now passes (100%)",
+    "frontend": "Smoke test green: login, chat page, aura ring, customize drawer, video-accept attribute, glow toggle round-trip"
+  },
+  "test_credentials": "test@lore.app / testpass123 verified working (via UI login and backend test_known_user_login).",
+  "seed_data_creation": "test_v6 fixture creates 1 TEST_V6_Char (public) per module run + 1 TEST_ user. Left in DB (consistent with prior iterations).",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Full backend regression: pytest /app/backend/tests/ -v --junitxml=/app/test_reports/pytest/full_results.xml (expect ~110 tests total). The v6 file test_v6_chat_settings_video.py is self-contained and fast (~7s). For end-to-end video bg upload on the frontend, use a real small .mp4 file via the customize-bg-input input[type=file] — Playwright programmatic value setting on React controlled <input type=range> sliders is unreliable; use click() on checkboxes or dispatch a proper 'input' event chain. The glow checkbox round-trip confirmed persistence plumbing is working end-to-end.",
+  "rca of the issue": "v5 CRITICAL bug RCA (for reference): set_chat_settings hardcoded $set to {user_id, character_id, active_persona_id, updated_at}, dropping 9 new ChatSettingsInput fields. Fix (applied in iteration_6): (1) build set_doc from body.model_dump(exclude_unset=True) so partial PUTs merge instead of overwrite; (2) after upsert, re-read doc and return _project_chat_settings(doc) which layers DB over _CHAT_SETTING_DEFAULTS; (3) GET now returns the same projection. Verified by 7 new assertions + the originally-failing TestChatCustomization."
+}

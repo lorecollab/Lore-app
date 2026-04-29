@@ -1,0 +1,65 @@
+{
+  "summary": "LORÉ v3 (personas + message versions/regenerate/edit). Backend: 51/51 pass (30 regression + 21 new). Frontend: persona pages render, sidebar nav-personas link works, persona picker visible in chat header, but several data-testids in the spec are not present in the rendered DOM, blocking automated verification of regenerate/edit/version arrows.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {
+        "component": "Chat / PersonaPicker",
+        "issue": "data-testid='persona-picker' is NOT on the pill button. The picker pill ('A Aria' top-right of chat header) renders correctly but cannot be located by spec-mandated testid. Add data-testid='persona-picker' to the trigger and data-testid='persona-option-none' / 'persona-option-{id}' / 'persona-create-link' to dropdown items.",
+        "selector": "[data-testid='persona-picker']",
+        "priority": "MEDIUM"
+      },
+      {
+        "component": "Chat / Message bubbles",
+        "issue": "Character/user message bubbles render as data-testid='message-{n}' (11 found) instead of role-prefixed testids 'message-character-{id}' / 'message-user-{id}'. As a result, hover-revealed buttons cannot be linked to a specific message id. Recommend: data-testid='message-character-{messageId}' on the bubble + data-testid='msg-regenerate-{messageId}', 'msg-edit-{messageId}', 'msg-edit-textarea-{messageId}', 'msg-edit-save-{messageId}', 'msg-edit-cancel-{messageId}', 'msg-version-prev-{messageId}', 'msg-version-next-{messageId}', 'msg-version-counter-{messageId}'.",
+        "selector": "[data-testid^='message-character-']",
+        "priority": "HIGH"
+      },
+      {
+        "component": "PersonaForm / Definition counter",
+        "issue": "data-testid='persona-definition-counter' not detected; counter element using '/ 32000' text not found in DOM scan. Add data-testid to counter so amber-at-90% threshold can be asserted automatically.",
+        "selector": "[data-testid='persona-definition-counter']",
+        "priority": "MEDIUM"
+      },
+      {
+        "component": "PersonaForm inputs",
+        "issue": "Inputs lack name attributes and stable data-testids (Name input only locatable by placeholder='Aria Chen'). Add data-testid='persona-name-input', 'persona-definition-input', 'persona-save-btn' for reliable testing.",
+        "selector": "input[name='name']",
+        "priority": "MEDIUM"
+      }
+    ],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_personas_messages.py",
+    "/app/backend/tests/backend_test.py",
+    "/app/test_reports/pytest/v3_results.xml"
+  ],
+  "action_items": [
+    "Add data-testid attributes to PersonaPicker trigger + dropdown items: 'persona-picker', 'persona-option-none', 'persona-option-{id}', 'persona-create-link'.",
+    "Add per-message data-testids in Chat: 'message-character-{id}', 'message-user-{id}', 'msg-regenerate-{id}', 'msg-edit-{id}', 'msg-edit-textarea-{id}', 'msg-edit-save-{id}', 'msg-edit-cancel-{id}', 'msg-version-prev-{id}', 'msg-version-next-{id}', 'msg-version-counter-{id}'.",
+    "Add data-testid to PersonaForm: 'persona-name-input', 'persona-definition-input', 'persona-definition-counter', 'persona-save-btn', 'persona-avatar-upload'.",
+    "Add data-testid='persona-card-{id}' on persona list cards and 'persona-create-btn' on '+ New Persona' (button currently labelled 'New Persona' has no testid)."
+  ],
+  "critical_code_review_comments": [
+    "server.py grew to ~960 lines — recommend splitting into modules (auth, files, characters, chat, personas, messages).",
+    "Persona DELETE correctly unsets active_persona_id in chat_settings (verified).",
+    "_ensure_versions backfill is idempotent and applied in both list_messages and PATCH path.",
+    "Regenerate uses history strictly < created_at of message — correct so the new variant is for the same turn.",
+    "Definition >32000 properly rejected on POST and PUT; boundary 32000 accepted (verified)."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_personas_messages.py"
+  ],
+  "success_rate": {"backend": "100% (51/51)", "frontend": "~70% (pages render and login/nav/persona-list work; testid mismatches blocked deeper UI assertions for regenerate/edit/version arrows)"},
+  "test_credentials": "test@lore.app / testpass123 (verified working).",
+  "seed_data_creation": "Backend tests create transient TEST_ users + characters + personas, all cleaned up at end of suite. Frontend test created an additional persona named 'TEST_UIPersona' under test@lore.app — main agent should clean up if desired.",
+  "retest_needed": true,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Backend is 100% green for v3. New tests live in /app/backend/tests/test_personas_messages.py (21 tests, ~19s wall). Run both files with pytest. For the frontend, the spec listed specific testids (persona-picker, message-character-{id}, msg-regenerate-{id}, msg-edit-{id}, persona-definition-counter) that are NOT implemented; the actual DOM uses message-{n} numbering and unnamed buttons. Once main agent adds the testids, retest hover->regenerate, hover->edit, version arrows, picker dropdown, definition 29k amber state. Persona picker pill IS visible in chat header (top-right, currently shows 'A Aria').",
+  "rca of the issue": "No backend bugs. Frontend testid coverage is incomplete relative to the spec — interactive elements for new features (persona picker, message regenerate/edit, version arrows, persona form fields, persona definition counter) lack data-testid attributes, making automated UI verification infeasible without DOM heuristics."
+}
