@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="2" skipped="0" tests="7" time="28.632" timestamp="2026-04-28T23:31:59.551821+00:00" hostname="agent-env-d0825309-1202-4a4c-9c4a-bb8f0b8e3f9d"><testcase classname="backend.tests.test_v8_phase1.TestUserSettings" name="test_get_settings_returns_merged_defaults" time="7.477" /><testcase classname="backend.tests.test_v8_phase1.TestUserSettings" name="test_partial_put_persists_and_leaves_others" time="2.168" /><testcase classname="backend.tests.test_v8_phase1.TestUserSettings" name="test_put_empty_body_returns_400" time="1.245" /><testcase classname="backend.tests.test_v8_phase1.TestUserSettings" name="test_put_only_unknown_fields_returns_400" time="1.065" /><testcase classname="backend.tests.test_v8_phase1.TestDeleteMeCascade" name="test_delete_me_cascades_all_collections" time="7.753" /><testcase classname="backend.tests.test_v8_phase1.TestChatToneLength" name="test_spicy_short_gives_short_reply" time="4.549"><failure message="AssertionError: 404 {&quot;detail&quot;:&quot;Not Found&quot;}&#10;assert 404 in (200, 201)&#10; +  where 404 = &lt;Response [404]&gt;.status_code">backend/tests/test_v8_phase1.py:183: in test_spicy_short_gives_short_reply
+    reply = _send_chat(token, cid, "how are you")
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/tests/test_v8_phase1.py:166: in _send_chat
+    assert r.status_code in (200, 201), f"{r.status_code} {r.text}"
+E   AssertionError: 404 {"detail":"Not Found"}
+E   assert 404 in (200, 201)
+E    +  where 404 = &lt;Response [404]&gt;.status_code</failure></testcase><testcase classname="backend.tests.test_v8_phase1.TestChatToneLength" name="test_clean_long_gives_longer_reply" time="2.723"><failure message="AssertionError: 404 {&quot;detail&quot;:&quot;Not Found&quot;}&#10;assert 404 in (200, 201)&#10; +  where 404 = &lt;Response [404]&gt;.status_code">backend/tests/test_v8_phase1.py:198: in test_clean_long_gives_longer_reply
+    reply = _send_chat(token, cid, "how are you")
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/tests/test_v8_phase1.py:166: in _send_chat
+    assert r.status_code in (200, 201), f"{r.status_code} {r.text}"
+E   AssertionError: 404 {"detail":"Not Found"}
+E   assert 404 in (200, 201)
+E    +  where 404 = &lt;Response [404]&gt;.status_code</failure></testcase></testsuite></testsuites>
