@@ -1,0 +1,169 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Cormorant+Garamond:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html, body, #root {
+    background-color: #15110F;
+    color: #F7EFE6;
+    min-height: 100%;
+    height: 100%;
+}
+
+body {
+    margin: 0;
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, "SF Pro Text", "Segoe UI", sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    letter-spacing: -0.005em;
+}
+
+/* Loré brand utilities */
+.lore-serif {
+    font-family: 'Cormorant Garamond', 'Times New Roman', serif;
+    letter-spacing: 0.01em;
+}
+.lore-gold { color: #D8B982; }
+.lore-cream { color: #F7EFE6; }
+.lore-ivory { color: #F7EFE6; }
+.lore-blush { color: #B98B86; }
+.lore-taupe { color: #A99B91; }
+.lore-muted { color: #A99B91; }
+.bg-lore { background-color: #15110F; }
+.bg-lore-card { background-color: #211B18; }
+.bg-lore-card-2 { background-color: #241F1C; }
+.border-lore { border-color: rgba(216, 185, 130, 0.16); }
+
+/* Logo treatment — wide-tracked + soft gold luminance */
+.lore-logo {
+    font-family: 'Cormorant Garamond', serif;
+    letter-spacing: 0.32em;
+    font-weight: 500;
+    background: linear-gradient(180deg, #EAD4A4 0%, #D8B982 50%, #B89564 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    text-shadow: 0 0 24px rgba(216, 185, 130, 0.18);
+}
+
+@layer base {
+    :root {
+        --background: 18 16% 6%;          /* #15110F */
+        --foreground: 32 56% 94%;         /* #F7EFE6 */
+        --card: 18 22% 12%;               /* #211B18 */
+        --card-foreground: 32 56% 94%;
+        --popover: 18 22% 12%;
+        --popover-foreground: 32 56% 94%;
+        --primary: 38 51% 67%;            /* #D8B982 champagne */
+        --primary-foreground: 18 16% 6%;
+        --secondary: 18 18% 12%;
+        --secondary-foreground: 32 56% 94%;
+        --muted: 18 16% 14%;
+        --muted-foreground: 28 12% 62%;   /* #A99B91 */
+        --accent: 38 51% 67%;
+        --accent-foreground: 18 16% 6%;
+        --destructive: 0 100% 71%;
+        --destructive-foreground: 0 0% 100%;
+        --border: 38 30% 28%;
+        --input: 18 16% 14%;
+        --ring: 38 51% 67%;
+        --radius: 1rem;
+    }
+}
+
+@layer base {
+    * { @apply border-border; }
+    body { @apply bg-background text-foreground; }
+}
+
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #2F2722; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #4A3D34; }
+
+::selection { background: rgba(216, 185, 130, 0.32); color: #F7EFE6; }
+
+.line-clamp-1 { display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
+.line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.line-clamp-3 { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+
+/* Typing animation */
+@keyframes typing {
+    0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }
+    40% { transform: translateY(-4px); opacity: 1; }
+}
+.typing-dot {
+    animation: typing 1.2s infinite ease-in-out;
+}
+.typing-dot:nth-child(2) { animation-delay: 0.15s; }
+.typing-dot:nth-child(3) { animation-delay: 0.3s; }
+
+/* Aura pulse */
+@keyframes aura-pulse {
+    0%, 100% { transform: scale(1); opacity: 0.55; }
+    50%      { transform: scale(1.18); opacity: 0.95; }
+}
+.aura-ring {
+    position: absolute;
+    inset: -6px;
+    border-radius: 9999px;
+    pointer-events: none;
+    animation: aura-pulse 2.6s ease-in-out infinite;
+    filter: blur(6px);
+}
+
+@keyframes ambient-drift {
+    0%   { transform: translate3d(0, 0, 0) scale(1); opacity: 0.85; }
+    50%  { transform: translate3d(0, -1.5%, 0) scale(1.03); opacity: 1; }
+    100% { transform: translate3d(0, 0, 0) scale(1); opacity: 0.85; }
+}
+.chat-ambient { animation: ambient-drift 14s ease-in-out infinite; }
+
+/* Loading screen — gold separator + soft bloom */
+@keyframes lore-bloom {
+    0%, 100% { opacity: 0.7; transform: scaleX(0.92); }
+    50%      { opacity: 1;   transform: scaleX(1); }
+}
+.lore-separator {
+    width: 8rem;
+    height: 1px;
+    background: linear-gradient(90deg, transparent 0%, #D8B982 50%, transparent 100%);
+    box-shadow: 0 0 12px rgba(216,185,130,0.55);
+    animation: lore-bloom 2.4s ease-in-out infinite;
+    transform-origin: center;
+}
+
+@keyframes lore-spinner {
+    0%   { transform: rotate(0deg); opacity: 0.4; }
+    50%  { opacity: 1; }
+    100% { transform: rotate(360deg); opacity: 0.4; }
+}
+.lore-spinner {
+    width: 22px; height: 22px;
+    border: 1.5px solid rgba(216,185,130,0.18);
+    border-top-color: rgba(216,185,130,0.85);
+    border-radius: 9999px;
+    animation: lore-spinner 1.5s linear infinite;
+}
+
+@keyframes lore-fade-up {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+.lore-fade-up { animation: lore-fade-up 0.6s ease-out both; }
+
+/* Glassy floating menu */
+.lore-glass {
+    background-color: rgba(33, 27, 24, 0.84);
+    backdrop-filter: blur(18px) saturate(1.2);
+    -webkit-backdrop-filter: blur(18px) saturate(1.2);
+    border: 1px solid rgba(216, 185, 130, 0.16);
+}
+
+/* iOS-feeling button press */
+.lore-press {
+    transition: transform 0.15s cubic-bezier(.2,.7,.2,1.2), opacity 0.15s;
+}
+.lore-press:active { transform: scale(0.97); opacity: 0.9; }
