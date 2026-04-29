@@ -1,0 +1,122 @@
+{
+  "project_name": "LORÉ",
+  "theme": "dark",
+  "archetype": "5 - Jewel & Luxury (Cinematic/Mysterious)",
+  "vibe": "Living world, theatrical, old script, deep memories, intimate, mysterious.",
+  "colors": {
+    "background": {
+      "base": "#050505",
+      "surface": "#0F0F11",
+      "surface_elevated": "#1A1A1C",
+      "glass": "rgba(5, 5, 5, 0.7)"
+    },
+    "text": {
+      "primary": "#F4F0E6",
+      "secondary": "#A8A8A2",
+      "muted": "#6B6B66"
+    },
+    "brand": {
+      "primary": "#D4AF37",
+      "primary_hover": "#F0C84B",
+      "accent": "#9E7B22"
+    },
+    "border": {
+      "subtle": "rgba(212, 175, 55, 0.15)",
+      "strong": "rgba(212, 175, 55, 0.4)",
+      "divider": "rgba(255, 255, 255, 0.05)"
+    },
+    "states": {
+      "memory_glow": "rgba(212, 175, 55, 0.2)",
+      "error": "#8C2A2A"
+    }
+  },
+  "typography": {
+    "font_families": {
+      "heading": "Cormorant Garamond, serif",
+      "body": "Manrope, sans-serif",
+      "mono": "JetBrains Mono, monospace"
+    },
+    "scales": {
+      "h1": "text-5xl sm:text-6xl tracking-tighter leading-none font-light",
+      "h2": "text-3xl sm:text-4xl tracking-tight leading-tight font-normal",
+      "h3": "text-xl sm:text-2xl tracking-normal leading-snug font-normal",
+      "body": "text-base leading-relaxed tracking-normal",
+      "small": "text-sm uppercase tracking-[0.15em] font-medium"
+    }
+  },
+  "layout_and_spacing": {
+    "spacing_scale": "Use generous spacing. p-6, p-8, p-12. Never cramp content.",
+    "dashboard_grid": "Bento Grid (Control Room Mode). grid-cols-1 md:grid-cols-3 lg:grid-cols-4. gap-6. Use h-full for stretching.",
+    "marketing_layout": "Asymmetrical. Large imagery, floating text, overlapping elements. Use The 'Tetris' Grid.",
+    "container_max_width": "max-w-7xl mx-auto"
+  },
+  "components": {
+    "buttons": {
+      "primary": "bg-transparent border border-[#D4AF37] text-[#D4AF37] hover:bg-[#D4AF37] hover:text-[#050505] transition-all duration-300 rounded-none px-6 py-3 uppercase tracking-widest text-xs",
+      "secondary": "bg-[#1A1A1C] text-[#F4F0E6] hover:bg-[#2A2A2C] transition-all duration-300 rounded-none px-6 py-3",
+      "ghost": "text-[#A8A8A2] hover:text-[#D4AF37] transition-colors bg-transparent hover:bg-transparent"
+    },
+    "chat_bubbles": {
+      "user": "bg-[#1A1A1C] border border-white/5 text-[#F4F0E6] rounded-2xl rounded-tr-sm px-5 py-4 max-w-[85%] font-body",
+      "character": "bg-transparent border-l-2 border-[#D4AF37] text-[#F4F0E6] pl-5 py-2 max-w-[90%] font-body text-lg leading-relaxed",
+      "scene_description": "text-center text-[#D4AF37] italic font-heading text-lg my-6 opacity-80"
+    },
+    "cards": {
+      "character_card": "bg-[#0F0F11] border border-white/5 hover:border-[#D4AF37]/40 transition-all duration-500 overflow-hidden relative group p-0",
+      "glass_panel": "backdrop-blur-xl bg-[#050505]/60 border border-white/10"
+    },
+    "forms": {
+      "input": "bg-[#0F0F11] border-b border-white/20 hover:border-[#D4AF37] focus:border-[#D4AF37] text-[#F4F0E6] rounded-none px-0 py-3 transition-colors outline-none w-full",
+      "label": "text-[#A8A8A2] text-xs uppercase tracking-[0.1em]"
+    }
+  },
+  "visual_effects": {
+    "shadows": {
+      "glow_gold": "drop-shadow-[0_0_15px_rgba(212,175,55,0.3)]",
+      "ambient": "shadow-[0_8px_32px_rgba(0,0,0,0.5)]"
+    },
+    "texture": "Add an SVG noise overlay with opacity-5 and mix-blend-overlay to the main background to kill digital flatness.",
+    "glassmorphism": "Used strictly for the sticky header and floating chat input. backdrop-blur-2xl bg-[#050505]/70 border-t border-white/5."
+  },
+  "animations": {
+    "page_transition": "Fade in with subtle upwards translation (y: 10 -> 0) over 0.6s ease-out.",
+    "hover_state": "Slight scale (1.02) and border color shift to Gold. Slower transitions (duration-500).",
+    "chat_reveal": "New messages stagger in from bottom with opacity fade."
+  },
+  "icons": {
+    "library": "lucide-react",
+    "style": "Stroke width 1.5. Clean, elegant."
+  },
+  "assets": {
+    "image_urls": {
+      "hero_background": {
+        "url": "https://images.unsplash.com/photo-1751963406608-17e10973beaf?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2ODh8MHwxfHNlYXJjaHwxfHxteXN0ZXJpb3VzJTIwZGFyayUyMGNpbmVtYXRpYyUyMGxhbmRzY2FwZXxlbnwwfHx8fDE3NzcwNzA1OTl8MA&ixlib=rb-4.1.0&q=85",
+        "description": "Mysterious cinematic dark landscape with light illuminating through branches. Used for landing page hero background with a heavy dark overlay."
+      },
+      "character_placeholder": {
+        "url": "https://images.pexels.com/photos/11008367/pexels-photo-11008367.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+        "description": "Mysterious hooded figure in a foggy forest. Used as a placeholder for character avatars."
+      },
+      "memory_background": {
+        "url": "https://images.unsplash.com/photo-1761942407242-bec5f94898e2?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2ODh8MHwxfHNlYXJjaHwzfHxteXN0ZXJpb3VzJTIwZGFyayUyMGNpbmVtYXRpYyUyMGxhbmRzY2FwZXxlbnwwfHx8fDE3NzcwNzA1OTl8MA&ixlib=rb-4.1.0&q=85",
+        "description": "Surreal portal landscape. Used for the memory timeline section or modal background."
+      },
+      "avatar_1": {
+        "url": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80",
+        "description": "Premium portrait photo for Character A."
+      },
+      "avatar_2": {
+        "url": "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&q=80",
+        "description": "Premium portrait photo for Character B."
+      }
+    }
+  },
+  "instructions_to_main_agent": {
+    "html_structure": "Rely heavily on HTML/Tailwind for structural asymmetry on the landing page. Avoid generic Shadcn cards for marketing; build them raw to allow overlapping.",
+    "shadcn_usage": "Use Shadcn strictly for complex interactive components (Dialog, Form, Select, ScrollArea) but customize them heavily to remove the default rounded-md 'Vercel' look. Use rounded-none or very minimal radius.",
+    "overlay_rule": "The hero image MUST have an overlay (e.g. bg-[#050505]/60) so text is highly readable.",
+    "testing": "All interactive elements MUST have data-testid attributes (e.g., data-testid='chat-input', data-testid='send-button').",
+    "motion": "Use framer-motion for smooth scrolling and staggered reveals on the dashboard grid. No jerky animations.",
+    "accessibility": "Ensure text contrast meets APCA/WCAG standards. Do NOT use #000000, use the specified #050505. Ensure focus rings are visible (ring-1 ring-[#D4AF37])."
+  }
+}
